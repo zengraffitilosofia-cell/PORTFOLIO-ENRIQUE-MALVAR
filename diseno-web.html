@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diseño Web — Enrique Malvar</title>
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f7f6f3;
+  --bg2:#ffffff;
+  --text:#1a1a18;
+  --text2:#6b6b65;
+  --accent:#1a1a18;
+  --border:#e0dfd8;
+  --tag-bg:#eeede8;
+  --card-shadow:0 20px 56px rgba(0,0,0,0.1);
+  --transition:0.38s cubic-bezier(.4,0,.2,1);
+}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;flex-direction:column;
+  position:relative;cursor:none;
+}
+/* Matrix canvas — very subtle */
+#matrixBgCanvas{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;background-color:#f0ede6;
+  opacity:0.35;
+}
+nav,.hero,.section-label,.projects-list,.detail-view,footer{position:relative;z-index:1;}
+
+/* ── CURSOR ── */
+.cursor{position:fixed;top:0;left:0;z-index:9998;pointer-events:none;width:8px;height:8px;background:var(--text);border-radius:50%;transform:translate(-50%,-50%);transition:width 0.2s,height 0.2s;}
+.cursor-ring{position:fixed;top:0;left:0;z-index:9997;pointer-events:none;width:34px;height:34px;border:1px solid rgba(26,26,24,0.3);border-radius:50%;transform:translate(-50%,-50%);transition:width 0.3s,height 0.3s,border-color 0.3s;}
+.cursor.hover{width:5px;height:5px;}
+.cursor-ring.hover{width:50px;height:50px;border-color:rgba(26,26,24,0.12);}
+
+/* ── PAGE TRANSITION ── */
+.page-transition{position:fixed;inset:0;background:var(--text);z-index:9990;transform:scaleX(0);transform-origin:left;pointer-events:none;}
+.page-transition.out{animation:pageOut 0.5s cubic-bezier(0.76,0,0.24,1) forwards;}
+.page-transition.in{animation:pageIn 0.5s cubic-bezier(0.76,0,0.24,1) forwards;}
+@keyframes pageOut{from{transform:scaleX(0);transform-origin:left;}to{transform:scaleX(1);transform-origin:left;}}
+@keyframes pageIn{from{transform:scaleX(1);transform-origin:right;}to{transform:scaleX(0);transform-origin:right;}}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:200;
+  background:rgba(247,246,243,0.88);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  padding:0 2.5rem;
+  display:flex;align-items:center;justify-content:space-between;height:60px;
+  transition:box-shadow 0.3s;
+}
+nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,0.06);}
+.nav-brand{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:1.1rem;font-weight:400;letter-spacing:0.08em;color:var(--text);text-decoration:none;transition:opacity 0.2s;}
+.nav-brand:hover{opacity:0.6;}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{
+  font-size:11px;font-weight:500;color:var(--text2);text-decoration:none;
+  letter-spacing:0.1em;text-transform:uppercase;cursor:none;
+  transition:color 0.2s;position:relative;padding-bottom:2px;
+}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--text);transition:width 0.3s;}
+.nav-links a:hover::after,.nav-links a.active::after{width:100%;}
+.nav-links a:hover,.nav-links a.active{color:var(--text);}
+.nav-toggle{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:none;padding:4px;}
+.nav-toggle span{display:block;width:22px;height:1px;background:var(--text);transition:all 0.3s;}
+.nav-toggle.open span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+.nav-toggle.open span:nth-child(2){opacity:0;}
+.nav-toggle.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+.nav-mobile{display:none;position:fixed;inset:0;top:60px;background:var(--bg);z-index:199;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem;opacity:0;transform:translateY(-10px);transition:opacity 0.3s,transform 0.3s;}
+.nav-mobile.open{display:flex;opacity:1;transform:translateY(0);}
+.nav-mobile a{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:2.8rem;font-weight:300;color:var(--text);text-decoration:none;transition:opacity 0.2s;}
+.nav-mobile a:hover{opacity:0.5;}
+
+/* ── HERO ── */
+.hero{padding:4.5rem 2.5rem 2.5rem;max-width:1100px;margin:0 auto;width:100%;}
+.hero-eyebrow{
+  font-size:10px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--text2);margin-bottom:1.4rem;display:flex;align-items:center;gap:1rem;
+  opacity:0;animation:fadeUp 0.6s 0.2s ease forwards;
+}
+.hero-eyebrow::before{content:'';display:block;width:28px;height:1px;background:var(--text2);}
+.hero h1{
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size:clamp(2.4rem,5.5vw,4.4rem);
+  font-weight:300;letter-spacing:-0.025em;line-height:1.1;
+  opacity:0;animation:fadeUp 0.7s 0.35s ease forwards;
+}
+.hero h1 em{font-style:italic;}
+.hero p{
+  margin-top:1.2rem;font-size:14px;color:var(--text2);max-width:480px;line-height:1.85;
+  opacity:0;animation:fadeUp 0.7s 0.5s ease forwards;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── SECTION LABEL ── */
+.section-label{
+  padding:0 2.5rem;max-width:1100px;margin:0 auto 2rem;width:100%;
+  display:flex;align-items:center;gap:1rem;
+  opacity:0;animation:fadeUp 0.6s 0.65s ease forwards;
+}
+.section-label span{font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--text2);white-space:nowrap;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── PROJECT CARDS ── */
+.projects-list{
+  padding:0 2.5rem;max-width:1100px;margin:0 auto 5rem;width:100%;
+  display:flex;flex-direction:column;gap:2px;
+}
+.proj-card{
+  background:var(--bg2);overflow:hidden;cursor:none;
+  display:grid;grid-template-columns:1fr 1fr;min-height:320px;
+  border:1px solid transparent;
+  opacity:0;transform:translateY(40px);
+  transition:opacity 0.65s ease, transform 0.65s ease, box-shadow 0.4s ease, border-color 0.4s;
+}
+.proj-card.visible{opacity:1;transform:translateY(0);}
+.proj-card:hover{box-shadow:var(--card-shadow);border-color:var(--border);z-index:1;}
+.proj-card:nth-child(even){direction:rtl;}
+.proj-card:nth-child(even)>*{direction:ltr;}
+.proj-screen{
+  overflow:hidden;position:relative;background:#e5e3dc;
+  display:flex;align-items:center;justify-content:center;
+}
+.proj-screen img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.55s cubic-bezier(0.4,0,0.2,1);}
+.proj-card:hover .proj-screen img{transform:scale(1.05);}
+.proj-screen::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg, rgba(26,26,24,0.06) 0%, transparent 60%);
+  opacity:0;transition:opacity 0.4s;
+}
+.proj-card:hover .proj-screen::after{opacity:1;}
+.proj-info{
+  padding:2.5rem 3rem;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.proj-num{font-size:9px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--text2);margin-bottom:1rem;}
+.proj-title{
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size:clamp(1.8rem,3vw,2.5rem);
+  font-weight:300;letter-spacing:-0.02em;line-height:1.1;margin-bottom:0.8rem;
+}
+.proj-title em{font-style:italic;}
+.proj-desc{font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:1.4rem;max-width:340px;}
+.tech-tags{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.8rem;}
+.tech-tag{
+  font-size:10px;letter-spacing:0.06em;padding:4px 13px;
+  background:var(--tag-bg);border:1px solid var(--border);border-radius:100px;color:var(--text2);
+  transition:border-color 0.2s,color 0.2s;
+}
+.tech-tag:hover{border-color:var(--text);color:var(--text);}
+.demo-btn{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;
+  color:var(--text);padding:10px 22px;
+  border:1px solid var(--text);border-radius:100px;align-self:flex-start;
+  transition:background var(--transition),color var(--transition);cursor:none;
+}
+.demo-btn:hover{background:var(--text);color:#fff;}
+.demo-btn span{font-size:14px;line-height:1;}
+
+/* ── DETAIL VIEW ── */
+.detail-view{display:none;padding:3.5rem 2.5rem;max-width:1100px;margin:0 auto;width:100%;animation:fadeIn 0.45s ease;}
+.detail-view.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.back-btn{
+  background:none;border:none;cursor:none;
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;font-weight:500;color:var(--text2);
+  padding:0;margin-bottom:2.5rem;
+  display:inline-flex;align-items:center;gap:0.6rem;
+  letter-spacing:0.08em;text-transform:uppercase;
+  transition:color 0.2s, transform 0.2s;
+}
+.back-btn::before{content:'←';}
+.back-btn:hover{color:var(--text);transform:translateX(-4px);}
+.detail-header{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;margin-bottom:2.5rem;}
+.detail-header h2{
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size:clamp(2rem,4.5vw,3.5rem);
+  font-weight:300;letter-spacing:-0.025em;line-height:1.05;margin-bottom:0.8rem;
+}
+.detail-header h2 em{font-style:italic;}
+.detail-header p{font-size:13px;color:var(--text2);line-height:1.85;}
+.detail-meta{padding-top:0.5rem;}
+.meta-row{
+  display:flex;align-items:baseline;justify-content:space-between;
+  padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:12px;
+}
+.meta-row:first-child{border-top:1px solid var(--border);}
+.meta-label{color:var(--text2);letter-spacing:0.06em;}
+.meta-val{color:var(--text);}
+.gallery-3cols{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin:0 0 2rem 0;}
+.gallery-item{
+  overflow:hidden;background:#e5e3dc;border:1px solid var(--border);
+  transition:border-color 0.3s;
+}
+.gallery-item:hover{border-color:rgba(26,26,24,0.3);}
+.gallery-item img{width:100%;height:auto;display:block;transition:transform 0.45s ease;}
+.gallery-item:hover img{transform:scale(1.03);}
+.outcome-strip{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);margin-bottom:3rem;
+}
+.outcome-item{background:var(--bg);padding:1.8rem 2rem;}
+.outcome-num{
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size:clamp(2rem,4.5vw,3rem);
+  font-weight:300;letter-spacing:-0.03em;color:var(--text);
+  margin-bottom:0.4rem;
+  opacity:0;transform:translateY(12px);
+  transition:opacity 0.5s ease,transform 0.5s ease;
+}
+.outcome-num.visible{opacity:1;transform:translateY(0);}
+.outcome-label{font-size:10px;color:var(--text2);letter-spacing:0.12em;text-transform:uppercase;}
+.process-section{margin-bottom:3rem;}
+.process-title{
+  font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--text2);margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;
+}
+.process-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);}
+.process-step{
+  background:var(--bg);padding:1.5rem;
+  opacity:0;transform:translateY(10px);
+  transition:opacity 0.4s ease, transform 0.4s ease;
+}
+.process-step.visible{opacity:1;transform:translateY(0);}
+.step-n{font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--text2);margin-bottom:0.6rem;}
+.step-label{font-size:13px;color:var(--text);line-height:1.55;}
+.detail-demo-btn{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;
+  color:#fff;padding:13px 30px;background:var(--text);
+  border:1px solid var(--text);border-radius:100px;
+  transition:background 0.3s,color 0.3s;cursor:none;
+}
+.detail-demo-btn:hover{background:transparent;color:var(--text);}
+footer{
+  margin-top:auto;border-top:1px solid var(--border);
+  padding:1.5rem 2.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+}
+.footer-copy{font-size:11px;color:var(--text2);letter-spacing:0.04em;}
+.footer-links{display:flex;gap:1.5rem;list-style:none;}
+.footer-links a{font-size:11px;color:var(--text2);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;cursor:none;transition:color 0.2s;}
+.footer-links a:hover{color:var(--text);}
+
+/* Responsive */
+@media(max-width:900px){
+  .detail-header{grid-template-columns:1fr;}
+  .outcome-strip{grid-template-columns:1fr 1fr;}
+  .process-steps{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:700px){
+  nav{padding:0 1.2rem;}
+  .nav-links{display:none;}
+  .nav-toggle{display:flex;}
+  .hero,.section-label,.projects-list,.detail-view{padding-left:1.2rem;padding-right:1.2rem;}
+  .proj-card{grid-template-columns:1fr;min-height:auto;}
+  .proj-card:nth-child(even){direction:ltr;}
+  .proj-screen{aspect-ratio:16/9;}
+  .proj-info{padding:1.8rem 1.5rem;}
+  .gallery-3cols{grid-template-columns:1fr;}
+  footer{padding:1.2rem;flex-direction:column;align-items:flex-start;}
+  .cursor,.cursor-ring{display:none;}
+  body{cursor:auto;}
+  .proj-card,.demo-btn,.back-btn,.detail-demo-btn,.footer-links a{cursor:pointer;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="matrixBgCanvas"></canvas>
+
+<div class="page-transition" id="pageTransition"></div>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav id="mainNav">
+  <a class="nav-brand" href="index.html">Enrique Malvar</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="diseno-grafico.html">Diseño Gráfico</a></li>
+    <li><a href="diseno-web.html" class="active">Diseño Web</a></li>
+  </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="index.html">Inicio</a>
+  <a href="diseno-grafico.html">Diseño Gráfico</a>
+  <a href="diseno-web.html">Diseño Web</a>
+</div>
+
+<div id="web-main">
+  <div class="hero">
+    <div class="hero-eyebrow">Portfolio web</div>
+    <h1>Diseño &amp; desarrollo<br><em>full-stack</em></h1>
+    <p>Proyectos que conectan el diseño visual con la funcionalidad técnica: desde landing pages hasta ecosistemas digitales completos con NFC.</p>
+  </div>
+  <div class="section-label"><span>Proyectos destacados</span></div>
+  <div class="projects-list">
+
+    <div class="proj-card" onclick="showDetail('nfcuniverse')">
+      <div class="proj-screen"><img src="assets/web/nfc_web_captura.png" alt="NFC Universe captura"></div>
+      <div class="proj-info">
+        <div class="proj-num">01 — Ecosistema NFC</div>
+        <h2 class="proj-title">NFC <em>Universe</em></h2>
+        <p class="proj-desc">Plataforma integral de soluciones NFC que conecta el mundo físico con experiencias digitales. Desarrollo de automatizaciones, aplicaciones de interacción sin contacto y ecosistema digital para hostelería y eventos.</p>
+        <div class="tech-tags"><span class="tech-tag">HTML/CSS</span><span class="tech-tag">JavaScript</span><span class="tech-tag">NFC API</span><span class="tech-tag">CRM Integration</span></div>
+        <a href="https://nfcuniverse.online/" class="demo-btn" target="_blank" onclick="event.stopPropagation()"><span>↗</span> Visitar sitio</a>
+      </div>
+    </div>
+
+    <div class="proj-card" onclick="showDetail('cartainteractiva')">
+      <div class="proj-screen"><img src="assets/web/carta_interactiva_captura.png" alt="Carta Interactiva NFC captura"></div>
+      <div class="proj-info">
+        <div class="proj-num">02 — SaaS Hostelería</div>
+        <h2 class="proj-title">Carta <em>Interactiva NFC</em></h2>
+        <p class="proj-desc">Soluciones SaaS para digitalización de cartas en hostelería mediante tecnología NFC. Elimina códigos QR, reduce costes de impresión y permite actualizaciones en tiempo real.</p>
+        <div class="tech-tags"><span class="tech-tag">Node.js</span><span class="tech-tag">PostgreSQL</span><span class="tech-tag">NFC</span><span class="tech-tag">UI/UX</span></div>
+        <a href="https://cartainteractiva.es/" class="demo-btn" target="_blank" onclick="event.stopPropagation()"><span>↗</span> Visitar sitio</a>
+      </div>
+    </div>
+
+    <div class="proj-card" onclick="showDetail('soka')">
+      <div class="proj-screen"><img src="assets/web/soka_web_captura.png" alt="Soka Webmasters captura"></div>
+      <div class="proj-info">
+        <div class="proj-num">03 — Agencia Digital</div>
+        <h2 class="proj-title">Soka <em>Webmasters</em></h2>
+        <p class="proj-desc">Agencia de marketing digital y desarrollo web con enfoque en SEO, diseño gráfico y estrategias personalizadas. Desarrollo y mantenimiento de sitios corporativos, e-commerce e implementación de soluciones CRM (Odoo).</p>
+        <div class="tech-tags"><span class="tech-tag">WordPress</span><span class="tech-tag">PHP</span><span class="tech-tag">SEO</span><span class="tech-tag">Odoo CRM</span></div>
+        <a href="https://sokawebmasters.es/" class="demo-btn" target="_blank" onclick="event.stopPropagation()"><span>↗</span> Visitar sitio</a>
+      </div>
+    </div>
+
+    <div class="proj-card" onclick="showDetail('gula')">
+      <div class="proj-screen"><img src="assets/web/gula_web_captura.png" alt="Gula Street Food captura"></div>
+      <div class="proj-info">
+        <div class="proj-num">04 — Landing Page Gastronómica</div>
+        <h2 class="proj-title">Gula <em>Street Food</em></h2>
+        <p class="proj-desc">Landing page y ecosistema digital para un local de street food en Celanova que aplica nuestra tecnología de menú NFC interactivo y Carta Interactiva. Diseño sabroso que refleja la identidad de la marca.</p>
+        <div class="tech-tags"><span class="tech-tag">HTML/CSS</span><span class="tech-tag">JavaScript</span><span class="tech-tag">NFC Integration</span><span class="tech-tag">UI/UX</span></div>
+        <a href="https://zengraffitilosofia-cell.github.io/Gula-street-food/index.html" class="demo-btn" target="_blank" onclick="event.stopPropagation()"><span>↗</span> Visitar sitio</a>
+      </div>
+    </div>
+
+    <div class="proj-card" onclick="showDetail('emcp')">
+      <div class="proj-screen"><img src="assets/web/emcp_web_captura.png" alt="EMCP Escuela de Música captura"></div>
+      <div class="proj-info">
+        <div class="proj-num">05 — WordPress &amp; Diseño Figma</div>
+        <h2 class="proj-title">Escuela de Música <em>Ponferrada</em></h2>
+        <p class="proj-desc">Sitio web institucional desarrollado con WordPress a partir de un diseño específico en Figma. Gestión dinámica de contenidos, calendario de actividades y área de noticias para la comunidad educativa.</p>
+        <div class="tech-tags"><span class="tech-tag">WordPress</span><span class="tech-tag">PHP</span><span class="tech-tag">Figma</span><span class="tech-tag">SEO</span></div>
+        <a href="https://emcp-educa.es/" class="demo-btn" target="_blank" onclick="event.stopPropagation()"><span>↗</span> Visitar sitio</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ DETAILS (contenido completo) ══ -->
+<div class="detail-view" id="detail-nfcuniverse">
+  <button class="back-btn" onclick="closeDetail()">Volver a proyectos</button>
+  <div class="detail-header">
+    <div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--text2);margin-bottom:0.8rem;">01 — Ecosistema NFC</div>
+      <h2>NFC <em>Universe</em></h2>
+      <p>Plataforma que conecta productos físicos con experiencias digitales mediante tecnología NFC. Desarrollo de soluciones personalizadas para empresas de diversos sectores: retail, eventos, hoteles, restaurantes y productos creativos.</p>
+    </div>
+    <div class="detail-meta">
+      <div class="meta-row"><span class="meta-label">Tipo</span><span class="meta-val">Plataforma NFC / SaaS</span></div>
+      <div class="meta-row"><span class="meta-label">Año</span><span class="meta-val">2024</span></div>
+      <div class="meta-row"><span class="meta-label">Tecnología</span><span class="meta-val">HTML5 · CSS3 · JavaScript · NFC API</span></div>
+      <div class="meta-row"><span class="meta-label">Duración</span><span class="meta-val">Ongoing</span></div>
+      <div class="meta-row"><span class="meta-label">Demo</span><a href="https://nfcuniverse.online/" class="meta-val" style="color:var(--text);text-decoration:underline;" target="_blank">nfcuniverse.online ↗</a></div>
+    </div>
+  </div>
+  <div class="gallery-3cols">
+    <div class="gallery-item"><img src="assets/web/nfc_web_captura_1.png" alt="NFC Universe detalle 1"></div>
+    <div class="gallery-item"><img src="assets/web/nfc_web_captura_2.png" alt="NFC Universe detalle 2"></div>
+    <div class="gallery-item"><img src="assets/web/nfc_web_captura_3.png" alt="NFC Universe detalle 3"></div>
+  </div>
+  <div class="outcome-strip">
+    <div class="outcome-item"><div class="outcome-num">+30%</div><div class="outcome-label">Interacción usuarios</div></div>
+    <div class="outcome-item"><div class="outcome-num">Multi-sector</div><div class="outcome-label">Soluciones adaptadas</div></div>
+    <div class="outcome-item"><div class="outcome-num">Real-time</div><div class="outcome-label">Actualización contenidos</div></div>
+  </div>
+  <div class="process-section">
+    <div class="process-title">Proceso</div>
+    <div class="process-steps">
+      <div class="process-step"><div class="step-n">01</div><div class="step-label">Análisis de necesidades de negocio</div></div>
+      <div class="process-step"><div class="step-n">02</div><div class="step-label">Diseño de arquitectura NFC</div></div>
+      <div class="process-step"><div class="step-n">03</div><div class="step-label">Desarrollo front-end y back-end</div></div>
+      <div class="process-step"><div class="step-n">04</div><div class="step-label">Integración CRM y testing</div></div>
+    </div>
+  </div>
+  <a href="https://nfcuniverse.online/" class="detail-demo-btn" target="_blank"><span>↗</span> Visitar proyecto</a>
+</div>
+
+<div class="detail-view" id="detail-cartainteractiva">
+  <button class="back-btn" onclick="closeDetail()">Volver a proyectos</button>
+  <div class="detail-header">
+    <div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--text2);margin-bottom:0.8rem;">02 — SaaS Hostelería</div>
+      <h2>Carta <em>Interactiva NFC</em></h2>
+      <p>Soluciones SaaS para digitalización de cartas en hostelería mediante tecnología NFC. Elimina códigos QR, reduce costes de impresión y permite actualizaciones en tiempo real. Implementación real en negocio operativo con arquitectura Full Stack.</p>
+    </div>
+    <div class="detail-meta">
+      <div class="meta-row"><span class="meta-label">Tipo</span><span class="meta-val">SaaS · Digitalización Hostelería</span></div>
+      <div class="meta-row"><span class="meta-label">Año</span><span class="meta-val">2024</span></div>
+      <div class="meta-row"><span class="meta-label">Tecnología</span><span class="meta-val">Node.js · PostgreSQL · HTML/CSS · NFC</span></div>
+      <div class="meta-row"><span class="meta-label">Duración</span><span class="meta-val">8 semanas</span></div>
+      <div class="meta-row"><span class="meta-label">Demo</span><a href="https://cartainteractiva.es/" class="meta-val" style="color:var(--text);text-decoration:underline;" target="_blank">cartainteractiva.es ↗</a></div>
+    </div>
+  </div>
+  <div class="gallery-3cols">
+    <div class="gallery-item"><img src="assets/web/carta_interactiva_captura_1.png" alt="Carta Interactiva detalle 1"></div>
+    <div class="gallery-item"><img src="assets/web/carta_interactiva_captura_2.png" alt="Carta Interactiva detalle 2"></div>
+    <div class="gallery-item"><img src="assets/web/carta_interactiva_captura_3.png" alt="Carta Interactiva detalle 3"></div>
+  </div>
+  <div class="outcome-strip">
+    <div class="outcome-item"><div class="outcome-num">-80%</div><div class="outcome-label">Costes impresión</div></div>
+    <div class="outcome-item"><div class="outcome-num">Real-time</div><div class="outcome-label">Actualización precios/platos</div></div>
+    <div class="outcome-item"><div class="outcome-num">Multi-idioma</div><div class="outcome-label">Alérgenos e información</div></div>
+  </div>
+  <div class="process-section">
+    <div class="process-title">Proceso</div>
+    <div class="process-steps">
+      <div class="process-step"><div class="step-n">01</div><div class="step-label">Auditoría de necesidades del sector</div></div>
+      <div class="process-step"><div class="step-n">02</div><div class="step-label">Diseño UX/UI centrado en mobile</div></div>
+      <div class="process-step"><div class="step-n">03</div><div class="step-label">Desarrollo Full Stack y API REST</div></div>
+      <div class="process-step"><div class="step-n">04</div><div class="step-label">Despliegue y formación clientes</div></div>
+    </div>
+  </div>
+  <a href="https://cartainteractiva.es/" class="detail-demo-btn" target="_blank"><span>↗</span> Visitar proyecto</a>
+</div>
+
+<div class="detail-view" id="detail-soka">
+  <button class="back-btn" onclick="closeDetail()">Volver a proyectos</button>
+  <div class="detail-header">
+    <div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--text2);margin-bottom:0.8rem;">03 — Agencia Digital</div>
+      <h2>Soka <em>Webmasters</em></h2>
+      <p>Agencia especializada en diseño web, marketing digital y SEO. Desarrollo de sitios web corporativos y e-commerce con enfoque en arquitectura técnica bien planteada y escalable. Implementación de soluciones CRM (Odoo) y estrategias de posicionamiento adaptadas a cada negocio.</p>
+    </div>
+    <div class="detail-meta">
+      <div class="meta-row"><span class="meta-label">Tipo</span><span class="meta-val">Agencia Digital / Consultoría</span></div>
+      <div class="meta-row"><span class="meta-label">Año</span><span class="meta-val">2023 - Actualidad</span></div>
+      <div class="meta-row"><span class="meta-label">Tecnología</span><span class="meta-val">WordPress · PHP · HTML/CSS · SEO</span></div>
+      <div class="meta-row"><span class="meta-label">Duración</span><span class="meta-val">Ongoing</span></div>
+      <div class="meta-row"><span class="meta-label">Demo</span><a href="https://sokawebmasters.es/" class="meta-val" style="color:var(--text);text-decoration:underline;" target="_blank">sokawebmasters.es ↗</a></div>
+    </div>
+  </div>
+  <div class="gallery-3cols">
+    <div class="gallery-item"><img src="assets/web/soka_web_captura_1.png" alt="Soka Webmasters detalle 1"></div>
+    <div class="gallery-item"><img src="assets/web/soka_web_captura_2.png" alt="Soka Webmasters detalle 2"></div>
+    <div class="gallery-item"><img src="assets/web/soka_web_captura_3.png" alt="Soka Webmasters detalle 3"></div>
+  </div>
+  <div class="outcome-strip">
+    <div class="outcome-item"><div class="outcome-num">100%</div><div class="outcome-label">Diseño a medida</div></div>
+    <div class="outcome-item"><div class="outcome-num">+40%</div><div class="outcome-label">Tráfico orgánico</div></div>
+    <div class="outcome-item"><div class="outcome-num">Multi-área</div><div class="outcome-label">SEO · Diseño · Desarrollo</div></div>
+  </div>
+  <div class="process-section">
+    <div class="process-title">Proceso</div>
+    <div class="process-steps">
+      <div class="process-step"><div class="step-n">01</div><div class="step-label">Análisis de mercado y competencia</div></div>
+      <div class="process-step"><div class="step-n">02</div><div class="step-label">Estrategia SEO y arquitectura web</div></div>
+      <div class="process-step"><div class="step-n">03</div><div class="step-label">Desarrollo web optimizado</div></div>
+      <div class="process-step"><div class="step-n">04</div><div class="step-label">Posicionamiento y reporting</div></div>
+    </div>
+  </div>
+  <a href="https://sokawebmasters.es/" class="detail-demo-btn" target="_blank"><span>↗</span> Visitar proyecto</a>
+</div>
+
+<div class="detail-view" id="detail-gula">
+  <button class="back-btn" onclick="closeDetail()">Volver a proyectos</button>
+  <div class="detail-header">
+    <div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--text2);margin-bottom:0.8rem;">04 — Landing Page Gastronómica</div>
+      <h2>Gula <em>Street Food</em></h2>
+      <p>Landing page con personalidad para un local de street food en Celanova que aplica nuestra tecnología NFC de Carta Interactiva para ofrecer un menú digital sin contacto. El cliente accede con un solo toque, actualizando contenidos en tiempo real y eliminando la necesidad de menús físicos.</p>
+    </div>
+    <div class="detail-meta">
+      <div class="meta-row"><span class="meta-label">Tipo</span><span class="meta-val">Landing Page · NFC Integration</span></div>
+      <div class="meta-row"><span class="meta-label">Año</span><span class="meta-val">2025</span></div>
+      <div class="meta-row"><span class="meta-label">Tecnología</span><span class="meta-val">HTML5 · CSS3 · JavaScript · NFC</span></div>
+      <div class="meta-row"><span class="meta-label">Duración</span><span class="meta-val">4 semanas</span></div>
+      <div class="meta-row"><span class="meta-label">Demo</span><a href="https://zengraffitilosofia-cell.github.io/Gula-street-food/index.html" class="meta-val" style="color:var(--text);text-decoration:underline;" target="_blank">Gula Street Food ↗</a></div>
+    </div>
+  </div>
+  <div class="gallery-3cols">
+    <div class="gallery-item"><img src="assets/web/gula_web_captura_1.png" alt="Gula Street Food vista 1"></div>
+    <div class="gallery-item"><img src="assets/web/gula_web_captura_2.png" alt="Gula Street Food vista 2"></div>
+    <div class="gallery-item"><img src="assets/web/gula_web_captura_3.png" alt="Gula Street Food vista 3"></div>
+  </div>
+  <div class="outcome-strip">
+    <div class="outcome-item"><div class="outcome-num">Menú</div><div class="outcome-label">Digital sin contacto</div></div>
+    <div class="outcome-item"><div class="outcome-num">Real-time</div><div class="outcome-label">Actualización de platos</div></div>
+    <div class="outcome-item"><div class="outcome-num">Branding</div><div class="outcome-label">Identidad visual potente</div></div>
+  </div>
+  <div class="process-section">
+    <div class="process-title">Proceso</div>
+    <div class="process-steps">
+      <div class="process-step"><div class="step-n">01</div><div class="step-label">Definición de la identidad de marca</div></div>
+      <div class="process-step"><div class="step-n">02</div><div class="step-label">Diseño UX/UI de landing page</div></div>
+      <div class="process-step"><div class="step-n">03</div><div class="step-label">Integración de menú NFC interactivo</div></div>
+      <div class="process-step"><div class="step-n">04</div><div class="step-label">Pruebas y despliegue</div></div>
+    </div>
+  </div>
+  <a href="https://zengraffitilosofia-cell.github.io/Gula-street-food/index.html" class="detail-demo-btn" target="_blank"><span>↗</span> Visitar proyecto</a>
+</div>
+
+<div class="detail-view" id="detail-emcp">
+  <button class="back-btn" onclick="closeDetail()">Volver a proyectos</button>
+  <div class="detail-header">
+    <div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--text2);margin-bottom:0.8rem;">05 — WordPress &amp; Diseño Figma</div>
+      <h2>Escuela de Música <em>Ponferrada</em></h2>
+      <p>Sitio web institucional desarrollado con WordPress a partir de un diseño específico en Figma. Incluye un completo gestor de contenidos, sección dinámica de noticias y un área interactiva de calendario que facilita a docentes, estudiantes y familias acceder a toda la información académica.</p>
+    </div>
+    <div class="detail-meta">
+      <div class="meta-row"><span class="meta-label">Tipo</span><span class="meta-val">WordPress · Figma to Web</span></div>
+      <div class="meta-row"><span class="meta-label">Año</span><span class="meta-val">2024 - Actualidad</span></div>
+      <div class="meta-row"><span class="meta-label">Tecnología</span><span class="meta-val">WordPress · PHP · Figma · SEO</span></div>
+      <div class="meta-row"><span class="meta-label">Duración</span><span class="meta-val">Ongoing</span></div>
+      <div class="meta-row"><span class="meta-label">Demo</span><a href="https://emcp-educa.es/" class="meta-val" style="color:var(--text);text-decoration:underline;" target="_blank">emcp-educa.es ↗</a></div>
+    </div>
+  </div>
+  <div class="gallery-3cols">
+    <div class="gallery-item"><img src="assets/web/emcp_web_captura_1.png" alt="EMCP vista 1"></div>
+    <div class="gallery-item"><img src="assets/web/emcp_web_captura_2.png" alt="EMCP vista 2"></div>
+    <div class="gallery-item"><img src="assets/web/emcp_web_captura_3.png" alt="EMCP vista 3"></div>
+  </div>
+  <div class="outcome-strip">
+    <div class="outcome-item"><div class="outcome-num">WordPress</div><div class="outcome-label">Gestión dinámica</div></div>
+    <div class="outcome-item"><div class="outcome-num">Figma</div><div class="outcome-label">Diseño exacto</div></div>
+    <div class="outcome-item"><div class="outcome-num">SEO</div><div class="outcome-label">Posicionamiento local</div></div>
+  </div>
+  <div class="process-section">
+    <div class="process-title">Proceso</div>
+    <div class="process-steps">
+      <div class="process-step"><div class="step-n">01</div><div class="step-label">Análisis de la identidad de la escuela</div></div>
+      <div class="process-step"><div class="step-n">02</div><div class="step-label">Diseño de interfaz en Figma</div></div>
+      <div class="process-step"><div class="step-n">03</div><div class="step-label">Maquetación y desarrollo WordPress</div></div>
+      <div class="process-step"><div class="step-n">04</div><div class="step-label">Optimización de rendimiento y lanzamiento</div></div>
+    </div>
+  </div>
+  <a href="https://emcp-educa.es/" class="detail-demo-btn" target="_blank"><span>↗</span> Visitar proyecto</a>
+</div>
+
+<footer>
+  <span class="footer-copy">© 2025 Enrique Malvar — Diseñador Gráfico &amp; Desarrollador Web</span>
+  <ul class="footer-links">
+    <li><a href="https://linkedin.com" target="_blank">LinkedIn</a></li>
+    <li><a href="https://github.com" target="_blank">GitHub</a></li>
+    <li><a href="https://behance.net" target="_blank">Behance</a></li>
+    <li><a href="#" onclick="alert('¡Próximamente!')">Descargar CV</a></li>
+  </ul>
+</footer>
+
+<script>
+(function() {
+
+  // ── PAGE TRANSITION ──
+  const pt = document.getElementById('pageTransition');
+  document.querySelectorAll('a[href]').forEach(link => {
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto')) return;
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      pt.classList.add('out');
+      setTimeout(() => { window.location.href = href; }, 500);
+    });
+  });
+  pt.classList.add('in');
+  setTimeout(() => pt.classList.remove('in'), 500);
+
+  // ── CURSOR ──
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  if (cursor && ring && window.innerWidth > 700) {
+    let cx = 0, cy = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { cx = e.clientX; cy = e.clientY; cursor.style.left = cx+'px'; cursor.style.top = cy+'px'; });
+    (function animR(){ rx += (cx-rx)*0.12; ry += (cy-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animR); })();
+    document.querySelectorAll('a,button,.proj-card,.tech-tag').forEach(el => {
+      el.addEventListener('mouseenter', () => { cursor.classList.add('hover'); ring.classList.add('hover'); });
+      el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); ring.classList.remove('hover'); });
+    });
+  }
+
+  // ── NAV ──
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 10));
+  const navToggle = document.getElementById('navToggle');
+  const navMobile = document.getElementById('navMobile');
+  navToggle.addEventListener('click', () => {
+    navToggle.classList.toggle('open');
+    navMobile.classList.toggle('open');
+    document.body.style.overflow = navMobile.classList.contains('open') ? 'hidden' : '';
+  });
+
+  // ── PROJECT CARDS SCROLL REVEAL (staggered) ──
+  const projCards = document.querySelectorAll('.proj-card');
+  const cardObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = Array.from(projCards).indexOf(entry.target);
+        setTimeout(() => entry.target.classList.add('visible'), idx * 120);
+        cardObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  projCards.forEach(c => cardObs.observe(c));
+
+  // ── OUTCOME NUMBERS (animate on enter detail) ──
+  function animateOutcomes(container) {
+    container.querySelectorAll('.outcome-num').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), i * 120);
+    });
+  }
+
+  // ── PROCESS STEPS STAGGER ──
+  function animateSteps(container) {
+    container.querySelectorAll('.process-step').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), i * 100);
+    });
+  }
+
+  // ── SHOW / CLOSE DETAIL ──
+  window.showDetail = function(id) {
+    document.getElementById('web-main').style.display = 'none';
+    document.querySelectorAll('.detail-view').forEach(d => d.classList.remove('active'));
+    const d = document.getElementById('detail-' + id);
+    if (d) {
+      d.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      d.querySelectorAll('.outcome-num').forEach(el => el.classList.remove('visible'));
+      d.querySelectorAll('.process-step').forEach(el => el.classList.remove('visible'));
+      setTimeout(() => {
+        animateOutcomes(d);
+        animateSteps(d);
+      }, 350);
+    }
+  };
+  window.closeDetail = function() {
+    document.getElementById('web-main').style.display = '';
+    document.querySelectorAll('.detail-view').forEach(d => d.classList.remove('active'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ── MATRIX BACKGROUND (very subtle) ──
+  (function() {
+    const canvas = document.getElementById('matrixBgCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, drops = [], fontSize = 14, fc = 0;
+    function resize() {
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = w; canvas.height = h;
+      drops = Array(Math.floor(w / fontSize)).fill(0).map(() => Math.floor(Math.random() * -h / fontSize));
+    }
+    function draw() {
+      fc++;
+      if (fc % 3 === 0) {
+        ctx.fillStyle = 'rgba(240,237,230,0.06)'; ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.font = `${fontSize}px monospace`;
+        drops.forEach((d, i) => {
+          ctx.fillText(Math.random() < 0.5 ? '0' : '1', i * fontSize, d * fontSize);
+          if (d * fontSize > h && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        });
+      }
+      requestAnimationFrame(draw);
+    }
+    window.addEventListener('resize', resize);
+    resize(); draw();
+  })();
+
+})();
+</script>
+</body>
+</html>
