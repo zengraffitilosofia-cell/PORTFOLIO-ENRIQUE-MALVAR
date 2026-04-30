@@ -375,7 +375,7 @@ footer{
   </div>
 </div>
 
-<!-- ══ DETAILS (todos completos) ══ -->
+<!-- ══ DETAIL: LAMAS ══ -->
 <div class="project-section" id="proj-lamas">
   <button class="back-btn" onclick="closeProject()">Volver a la galería</button>
   <div class="project-header">
@@ -388,8 +388,8 @@ footer{
     </div>
   </div>
   <div class="gallery-3cols">
-    <div class="gallery-item"><img src="assets/img/LAMAS.PNG" alt="Lamas logo" onclick="openLightbox('assets/img/LAMAS.PNG')"></div>
-    <div class="gallery-item"><img src="assets/img/LAMAS.PNG" alt="Lamas logo aplicación" onclick="openLightbox('assets/img/LAMAS.PNG')"></div>
+    <div class="gallery-item"><img src="assets/img/LAMAS.PNG" alt="Lamas logo aplicación 1" onclick="openLightbox('assets/img/LAMAS.PNG')"></div>
+    <div class="gallery-item"><img src="assets/img/LAMAS.PNG" alt="Lamas logo aplicación 2" onclick="openLightbox('assets/img/LAMAS.PNG')"></div>
     <div class="gallery-item"><img src="assets/img/LAMAS_tarjeta.PNG" alt="Lamas tarjeta" onclick="openLightbox('assets/img/LAMAS_tarjeta.PNG')"></div>
   </div>
   <div class="proj-info">
@@ -399,6 +399,7 @@ footer{
   </div>
 </div>
 
+<!-- ══ DETAIL: MOONTOWER ══ -->
 <div class="project-section" id="proj-moontower">
   <button class="back-btn" onclick="closeProject()">Volver a la galería</button>
   <div class="project-header">
@@ -411,8 +412,8 @@ footer{
     </div>
   </div>
   <div class="gallery-3cols">
-    <div class="gallery-item"><img src="assets/img/moontower.PNG" alt="Moontower logo color" onclick="openLightbox('assets/img/moontower.PNG')"></div>
-    <div class="gallery-item"><img src="assets/img/moontower2.PNG" alt="Moontower logo blanco" onclick="openLightbox('assets/img/moontower2.PNG')"></div>
+    <div class="gallery-item"><img src="assets/img/moontower.PNG" alt="Moontower color" onclick="openLightbox('assets/img/moontower.PNG')"></div>
+    <div class="gallery-item"><img src="assets/img/moontower2.PNG" alt="Moontower blanco" onclick="openLightbox('assets/img/moontower2.PNG')"></div>
     <div class="gallery-item"><img src="assets/img/moontower3.PNG" alt="Moontower isotipo" onclick="openLightbox('assets/img/moontower3.PNG')"></div>
   </div>
   <div class="proj-info">
@@ -422,6 +423,7 @@ footer{
   </div>
 </div>
 
+<!-- ══ DETAIL: CANNABALISM ══ -->
 <div class="project-section" id="proj-cannabalism">
   <button class="back-btn" onclick="closeProject()">Volver a la galería</button>
   <div class="project-header">
@@ -445,6 +447,7 @@ footer{
   </div>
 </div>
 
+<!-- ══ DETAIL: NIGRÁN JAZZ ══ -->
 <div class="project-section" id="proj-jazz">
   <button class="back-btn" onclick="closeProject()">Volver a la galería</button>
   <div class="project-header">
@@ -468,6 +471,7 @@ footer{
   </div>
 </div>
 
+<!-- ══ DETAIL: FIESTA DE LA OLIVA (MARTOS) ══ -->
 <div class="project-section" id="proj-martos">
   <button class="back-btn" onclick="closeProject()">Volver a la galería</button>
   <div class="project-header">
@@ -625,10 +629,59 @@ footer{
     }
   })();
 
-  // ── BACKGROUND CANVAS: Figuras geométricas ──
+  // ── BACKGROUND CANVAS: Figuras geométricas (aparición/desaparición en bucle) ──
   (function() {
     const canvas = document.getElementById('figuresBgCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let width, height, shapes = [], state = 'appearing';
-    function resize
+    function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; initShapes(true); }
+    function initShapes(reset) {
+      shapes = [];
+      for (let i = 0; i < 16; i++) {
+        shapes.push({
+          type: Math.floor(Math.random() * 3),
+          x: Math.random() * width,
+          y: Math.random() * height,
+          size: 30 + Math.random() * 90,
+          progress: reset ? 0 : 1,
+          speed: 0.003 + Math.random() * 0.006,
+          rotation: Math.random() * Math.PI * 2
+        });
+      }
+    }
+    function drawShape(s) {
+      if (s.progress <= 0) return;
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(s.rotation);
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(232,228,217,${0.1 * s.progress})`;
+      ctx.lineWidth = 1.2;
+      if (s.type === 0) ctx.arc(0, 0, s.size/2 * s.progress, 0, Math.PI * 2 * s.progress);
+      else if (s.type === 1) { const h = s.size/2 * s.progress; ctx.rect(-h,-h,s.size*s.progress,s.size*s.progress); }
+      else { const h = s.size * s.progress; ctx.moveTo(0,-h/2); ctx.lineTo(h/2,h/2); ctx.lineTo(-h/2,h/2); ctx.closePath(); }
+      ctx.stroke();
+      ctx.restore();
+    }
+    function animate() {
+      let done = true;
+      if (state === 'appearing') {
+        shapes.forEach(s => { if (s.progress < 1) { s.progress = Math.min(1, s.progress + s.speed); done = false; } });
+        if (done) state = 'disappearing';
+      } else {
+        shapes.forEach(s => { if (s.progress > 0) { s.progress = Math.max(0, s.progress - s.speed); done = false; } });
+        if (done) { initShapes(true); state = 'appearing'; }
+      }
+      ctx.clearRect(0, 0, width, height);
+      shapes.forEach(s => drawShape(s));
+      requestAnimationFrame(animate);
+    }
+    window.addEventListener('resize', resize);
+    resize(); animate();
+  })();
+
+})();
+</script>
+</body>
+</html>
