@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contacto — Enrique Malvar</title>
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f7f6f3;
+  --bg2:#ffffff;
+  --text:#1a1a18;
+  --text2:#6b6b65;
+  --accent:#1a1a18;
+  --border:#e0dfd8;
+  --tag-bg:#eeede8;
+  --card-shadow:0 20px 60px rgba(0,0,0,0.14);
+  --transition:0.38s cubic-bezier(.4,0,.2,1);
+}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  cursor:none;
+}
+
+/* ── CURSOR ── */
+.cursor{
+  position:fixed;top:0;left:0;z-index:9998;pointer-events:none;
+  width:10px;height:10px;background:var(--text);border-radius:50%;
+  transform:translate(-50%,-50%);
+  transition:width 0.2s, height 0.2s, background 0.2s;
+}
+.cursor-ring{
+  position:fixed;top:0;left:0;z-index:9997;pointer-events:none;
+  width:38px;height:38px;border:1px solid rgba(26,26,24,0.35);
+  border-radius:50%;transform:translate(-50%,-50%);
+  transition:width 0.3s, height 0.3s, border-color 0.3s;
+}
+.cursor.hover{width:6px;height:6px;}
+.cursor-ring.hover{width:52px;height:52px;border-color:rgba(26,26,24,0.18);}
+
+/* ── PAGE TRANSITION ── */
+.page-transition{
+  position:fixed;inset:0;background:var(--text);z-index:9990;
+  transform:scaleX(0);transform-origin:left;
+  pointer-events:none;
+}
+.page-transition.out{animation:pageOut 0.5s cubic-bezier(0.76,0,0.24,1) forwards;}
+.page-transition.in{animation:pageIn 0.5s cubic-bezier(0.76,0,0.24,1) forwards;}
+@keyframes pageOut{from{transform:scaleX(0);transform-origin:left;}to{transform:scaleX(1);transform-origin:left;}}
+@keyframes pageIn{from{transform:scaleX(1);transform-origin:right;}to{transform:scaleX(0);transform-origin:right;}}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:200;
+  background:rgba(247,246,243,0.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 2.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  height:60px;
+  transition:background 0.3s, box-shadow 0.3s;
+}
+nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,0.06);}
+.nav-brand{
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size:1.1rem;font-weight:400;
+  letter-spacing:0.08em;
+  color:var(--text);text-decoration:none;
+  transition:opacity 0.2s;
+  display:flex;align-items:center;
+}
+.nav-brand:hover{opacity:0.6;}
+.nav-brand img{height:52px;width:auto;display:block;}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{
+  font-size:11px;font-weight:500;color:var(--text2);text-decoration:none;
+  letter-spacing:0.1em;text-transform:uppercase;
+  transition:color 0.2s;position:relative;padding-bottom:2px;
+}
+.nav-links a::after{
+  content:'';position:absolute;bottom:0;left:0;width:0;height:1px;
+  background:var(--text);transition:width 0.3s ease;
+}
+.nav-links a:hover::after,.nav-links a.active::after{width:100%;}
+.nav-links a:hover,.nav-links a.active{color:var(--text);}
+
+/* Hamburger mobile */
+.nav-toggle{
+  display:none;flex-direction:column;gap:5px;
+  background:none;border:none;cursor:none;padding:4px;z-index:201;
+}
+.nav-toggle span{display:block;width:22px;height:1px;background:var(--text);transition:all 0.3s ease;}
+.nav-toggle.open span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+.nav-toggle.open span:nth-child(2){opacity:0;}
+.nav-toggle.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+.nav-mobile{
+  display:none;position:fixed;inset:0;top:60px;
+  background:var(--bg);z-index:199;
+  flex-direction:column;align-items:center;justify-content:center;gap:2.5rem;
+  opacity:0;transform:translateY(-10px);
+  transition:opacity 0.3s ease, transform 0.3s ease;
+}
+.nav-mobile.open{display:flex;opacity:1;transform:translateY(0);}
+.nav-mobile a{
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size:2.8rem;font-weight:300;letter-spacing:-0.02em;
+  color:var(--text);text-decoration:none;
+  transition:opacity 0.2s;
+}
+.nav-mobile a:hover{opacity:0.5;}
+
+/* ── HERO ── */
+.hero{
+  padding:4.5rem 2.5rem 2rem;
+  max-width:1100px;margin:0 auto;width:100%;
+}
+.hero-eyebrow{
+  font-size:10px;font-weight:600;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--text2);
+  margin-bottom:1.4rem;display:flex;align-items:center;gap:1rem;
+  opacity:0;animation:fadeUp 0.6s 0.2s ease forwards;
+}
+.hero-eyebrow::before{content:'';display:block;width:28px;height:1px;background:var(--text2);}
+.hero h1{
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size:clamp(2.4rem,5.5vw,4.4rem);
+  font-weight:300;letter-spacing:-0.025em;line-height:1.1;
+  opacity:0;animation:fadeUp 0.7s 0.35s ease forwards;
+}
+.hero h1 em{font-style:italic;}
+.hero p{
+  margin-top:1.2rem;font-size:14px;color:var(--text2);
+  max-width:480px;line-height:1.85;
+  opacity:0;animation:fadeUp 0.7s 0.5s ease forwards;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── CONTACT INFO (REEMPLAZA FORMULARIO) ── */
+.contact-section{
+  padding:0 2.5rem 5rem;
+  max-width:800px;margin:0 auto;width:100%;
+  opacity:0;animation:fadeUp 0.7s 0.7s ease forwards;
+}
+.contact-cards{
+  display:flex;
+  flex-wrap:wrap;
+  gap:2rem;
+  justify-content:space-between;
+  margin-bottom:3rem;
+}
+.contact-card{
+  flex:1;
+  min-width:200px;
+  background:var(--bg2);
+  border-radius:24px;
+  padding:2rem 1.8rem;
+  text-align:center;
+  transition:transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow:0 6px 14px rgba(0,0,0,0.02);
+  border:1px solid var(--border);
+}
+.contact-card:hover{
+  transform:translateY(-6px);
+  box-shadow:var(--card-shadow);
+}
+.contact-icon{
+  font-size:2.4rem;
+  margin-bottom:1rem;
+}
+.contact-card h3{
+  font-size:1rem;
+  font-weight:600;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  margin-bottom:0.75rem;
+  color:var(--text);
+}
+.contact-card p, .contact-card a{
+  font-size:1rem;
+  color:var(--text);
+  text-decoration:none;
+  word-break:break-word;
+}
+.contact-card a{
+  border-bottom:1px solid var(--border);
+  transition:border-color 0.2s;
+}
+.contact-card a:hover{
+  border-bottom-color:var(--text);
+}
+.contact-info-note{
+  text-align:center;
+  font-size:13px;
+  color:var(--text2);
+  border-top:1px solid var(--border);
+  padding-top:2rem;
+  margin-top:1rem;
+}
+
+/* ── FOOTER ── */
+footer{
+  margin-top:auto;border-top:1px solid var(--border);
+  padding:1.5rem 2.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;position:relative;z-index:1;
+}
+.footer-copy{font-size:11px;color:var(--text2);letter-spacing:0.04em;}
+.footer-links{display:flex;gap:1.5rem;list-style:none;}
+.footer-links a{
+  font-size:11px;color:var(--text2);text-decoration:none;
+  letter-spacing:0.08em;text-transform:uppercase;
+  transition:color 0.2s;cursor:none;
+}
+.footer-links a:hover{color:var(--text);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  nav{padding:0 1.2rem;}
+  .nav-links{display:none;}
+  .nav-toggle{display:flex;}
+  .hero,.contact-section{padding-left:1.2rem;padding-right:1.2rem;}
+  .contact-cards{flex-direction:column;gap:1.2rem;}
+  footer{padding:1.2rem;flex-direction:column;align-items:flex-start;}
+  .cursor,.cursor-ring{display:none;}
+  body{cursor:auto;}
+  a,button{cursor:pointer;}
+}
+</style>
+</head>
+<body>
+
+<div class="page-transition" id="pageTransition"></div>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav id="mainNav">
+  <a class="nav-brand" href="index.html" aria-label="Enrique Malvar — Inicio"><img src="assets/img/logo-enrique.svg" alt="Enrique Malvar"></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="diseno-grafico.html">Diseño Gráfico</a></li>
+    <li><a href="diseno-web.html">Diseño Web</a></li>
+    <li><a href="contacto.html" class="active">Contacto</a></li>
+  </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="index.html">Inicio</a>
+  <a href="diseno-grafico.html">Diseño Gráfico</a>
+  <a href="diseno-web.html">Diseño Web</a>
+  <a href="contacto.html">Contacto</a>
+</div>
+
+<main>
+  <section class="hero">
+    <div class="hero-eyebrow">Contacto directo</div>
+    <h1>Conecta <em>fácilmente</em></h1>
+    <p>Teléfono, correo o WhatsApp. Elige el canal que prefieras, estaré atento a tu mensaje.</p>
+  </section>
+
+  <section class="contact-section">
+    <div class="contact-cards">
+      <!-- Tarjeta Teléfono -->
+      <div class="contact-card">
+        <div class="contact-icon">📞</div>
+        <h3>Teléfono</h3>
+        <p><a href="tel:+34640559418">+34 640 55 94 18</a></p>
+      </div>
+      <!-- Tarjeta Correo -->
+      <div class="contact-card">
+        <div class="contact-icon">✉️</div>
+        <h3>Correo</h3>
+        <p><a href="mailto:zen.designer.pro@gmail.com">zen.designer.pro@gmail.com</a></p>
+      </div>
+      <!-- Tarjeta WhatsApp (con enlace directo al número) -->
+      <div class="contact-card">
+        <div class="contact-icon">💬</div>
+        <h3>WhatsApp</h3>
+        <p><a href="https://wa.me/34640559418?text=Hola%20Enrique,%20me%20interesa%20tu%20trabajo" target="_blank">+34 640 55 94 18</a></p>
+      </div>
+    </div>
+    <div class="contact-info-note">
+      Respondo en menos de 24 horas ✨
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span class="footer-copy">© 2025 Enrique Malvar — Diseñador Gráfico &amp; Desarrollador Web</span>
+  <ul class="footer-links">
+    <li><a href="https://linkedin.com" target="_blank">LinkedIn</a></li>
+    <li><a href="https://github.com" target="_blank">GitHub</a></li>
+    <li><a href="https://behance.net" target="_blank">Behance</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+  </ul>
+</footer>
+
+<script>
+(function() {
+  // ── PAGE TRANSITION ──
+  const pt = document.getElementById('pageTransition');
+  function triggerEnterAnimation() {
+    pt.classList.remove('out', 'in');
+    pt.style.animation = 'none';
+    pt.style.transform = 'scaleX(0)';
+    pt.offsetHeight;
+    pt.style.animation = '';
+    pt.classList.add('in');
+    setTimeout(() => pt.classList.remove('in'), 500);
+  }
+  document.querySelectorAll('a[href]').forEach(link => {
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto')) return;
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      pt.classList.add('out');
+      setTimeout(() => { window.location.href = href; }, 500);
+    });
+  });
+  triggerEnterAnimation();
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) triggerEnterAnimation();
+  });
+
+  // ── CURSOR ──
+  const cursor = document.getElementById('cursor');
+  const cursorRing = document.getElementById('cursorRing');
+  if (cursor && cursorRing && window.innerWidth > 700) {
+    let cx = 0, cy = 0;
+    document.addEventListener('mousemove', e => {
+      cx = e.clientX; cy = e.clientY;
+      cursor.style.left = cx + 'px';
+      cursor.style.top = cy + 'px';
+    });
+    let rx = 0, ry = 0;
+    function animRing() {
+      rx += (cx - rx) * 0.12;
+      ry += (cy - ry) * 0.12;
+      cursorRing.style.left = rx + 'px';
+      cursorRing.style.top = ry + 'px';
+      requestAnimationFrame(animRing);
+    }
+    animRing();
+    document.querySelectorAll('a, button, .contact-card, .nav-toggle').forEach(el => {
+      el.addEventListener('mouseenter', () => { cursor.classList.add('hover'); cursorRing.classList.add('hover'); });
+      el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); cursorRing.classList.remove('hover'); });
+    });
+  }
+
+  // ── NAV scroll + mobile ──
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 10);
+  });
+  const navToggle = document.getElementById('navToggle');
+  const navMobile = document.getElementById('navMobile');
+  navToggle.addEventListener('click', () => {
+    navToggle.classList.toggle('open');
+    navMobile.classList.toggle('open');
+    document.body.style.overflow = navMobile.classList.contains('open') ? 'hidden' : '';
+  });
+  navMobile.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      navToggle.classList.remove('open');
+      navMobile.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+})();
+</script>
+</body>
+</html>
