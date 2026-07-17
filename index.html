@@ -19,7 +19,7 @@
   --card-shadow:0 20px 60px rgba(0,0,0,0.14);
   --transition:0.42s cubic-bezier(.4,0,.2,1);
 }
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth;overflow-x:hidden;max-width:100%;}
 body{
   font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
   background:var(--bg);
@@ -395,7 +395,7 @@ nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,0.06);}
 .skills-list li i{font-size:13px;line-height:1;}
 .skill-badge{
   display:inline-flex;align-items:center;justify-content:center;
-  width:15px;height:15px;border-radius:4px;
+  min-width:15px;height:15px;padding:0 4px;border-radius:4px;
   background:var(--text);color:var(--bg2);
   font-size:8px;font-weight:700;letter-spacing:0;
 }
@@ -585,7 +585,7 @@ footer{
     <div class="about-label">Herramientas &amp; habilidades</div>
     <ul class="skills-list" id="skillsList">
       <li><img class="skill-logo" src="https://cdn.simpleicons.org/anthropic/1a1a18" alt="Anthropic"> Claude / Claude Code</li>
-      <li><img class="skill-logo" src="https://cdn.simpleicons.org/openai/1a1a18" alt="OpenAI"> ChatGPT</li>
+      <li><span class="skill-badge">GPT</span> ChatGPT</li>
       <li><img class="skill-logo" src="https://cdn.simpleicons.org/deepseek/1a1a18" alt="DeepSeek"> DeepSeek</li>
       <li><i class="devicon-html5-plain colored"></i><i class="devicon-css3-plain colored"></i><i class="devicon-javascript-plain colored"></i> HTML / CSS / JS</li>
       <li><i class="devicon-figma-plain colored"></i> Figma</li>
